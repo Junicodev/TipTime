@@ -6,21 +6,29 @@ import com.example.tiptime.databinding.ActivityMainBinding
 import java.text.NumberFormat
 
 class MainActivity : AppCompatActivity() {
-    lateinit var binding: ActivityMainBinding
+    private lateinit var binding: ActivityMainBinding
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        binding.calculateButton.setOnClickListener{ calculateTip() }
+        binding.calculateButton.setOnClickListener { calculateTip() }
+
+        binding.roundUpSwitch.setOnClickListener { calculateTip() }
+        binding.optionTwentyPercent.setOnClickListener { calculateTip() }
+        binding.optionEighteenPercent.setOnClickListener { calculateTip() }
+        binding.optionFifteenPercent.setOnClickListener { calculateTip() }
     }
 
     private fun calculateTip() {
-        val cost = binding.costOfService.text.toString().toDouble()
-        val selectedId = binding.tipOptions.checkedRadioButtonId
+        val cost = binding.costOfService.text.toString().toDoubleOrNull()
+        if (cost == null) {
+            displayTip(0.0)
+            return
+        }
 
-        val tipPercentage = when (selectedId) {
+        val tipPercentage = when (binding.tipOptions.checkedRadioButtonId) {
             R.id.option_twenty_percent -> 0.20
             R.id.option_eighteen_percent -> 0.18
             else -> 0.15
@@ -28,12 +36,14 @@ class MainActivity : AppCompatActivity() {
 
         var tip = tipPercentage * cost
 
-        if(binding.roundUpSwitch.isChecked)
+        if (binding.roundUpSwitch.isChecked)
             tip = kotlin.math.ceil(tip)
 
-        NumberFormat.getCurrencyInstance()
-        val formattedTip = NumberFormat.getCurrencyInstance().format(tip)
+        displayTip(tip)
+    }
 
+    private fun displayTip(tip: Double) {
+        val formattedTip = NumberFormat.getCurrencyInstance().format(tip)
         binding.tipResult.text = getString(R.string.tip_amount, formattedTip)
     }
 }
